@@ -5,72 +5,75 @@ class Producto:
         self.cantidad = cantidad
         self.precio = precio
 
-    # Getters y setters
-    def get_id(self):
-        return self.id
-
-    def set_id(self, id):
-        self.id = id
-
-    def get_nombre(self):
-        return self.nombre
-
-    def set_nombre(self, nombre):
-        self.nombre = nombre
-
-    def get_cantidad(self):
-        return self.cantidad
-
-    def set_cantidad(self, cantidad):
-        self.cantidad = cantidad
-
-    def get_precio(self):
-        return self.precio
-
-    def set_precio(self, precio):
-        self.precio = precio
-
-
 class Inventario:
     def __init__(self):
         self.productos = []
+        self.nombre_archivo = "inventario.txt"  # Nombre del archivo donde se va a guardar el inventario
+        self.cargar_inventario()
 
     def agregar_producto(self, producto):
         self.productos.append(producto)
+        self.actualizar_archivos()
+
+    def actualizar_archivos(self):
+        try:
+            with open(self.nombre_archivo, "w") as archivo:
+                for producto in self.productos:
+                    archivo.write(f"{producto.id},{producto.nombre},{producto.cantidad},{producto.precio}\n")
+            print("Inventario actualizado en el archivo correctamente.")
+        except PermissionError:
+            print("No se tiene permisos para escribir en el archivo.")
+        except Exception as e:
+            print(f"Error al actualizar el archivo: {e}")
+
+    def cargar_inventario(self):
+        try:
+            with open(self.nombre_archivo, "r") as archivo:
+                for linea in archivo:
+                    datos = linea.strip().split(",")
+                    if len(datos) == 4:
+                        id, nombre, cantidad, precio = datos
+                        producto = Producto(id, nombre, int(cantidad), float(precio))
+                        self.productos.append(producto)
+            print("Inventario cargado desde el archivo correctamente.")
+        except FileNotFoundError:
+            print("El archivo de inventario no existe. Se creará uno nuevo.")
+        except PermissionError:
+            print("No se tiene permisos para leer el archivo.")
+        except Exception as e:
+            print(f"Error al cargar el inventario desde el archivo: {e}")
 
     def eliminar_producto(self, id):
         for producto in self.productos:
-            if producto.get_id() == id:
+            if producto.id == id:
                 self.productos.remove(producto)
+                self.actualizar_archivos()
                 return True
         return False
 
     def actualizar_producto(self, id, cantidad=None, precio=None):
         for producto in self.productos:
-            if producto.get_id() == id:
+            if producto.id == id:
                 if cantidad is not None:
-                    producto.set_cantidad(cantidad)
+                    producto.cantidad = cantidad
                 if precio is not None:
-                    producto.set_precio(precio)
+                    producto.precio = precio
+                self.actualizar_archivos()
                 return True
         return False
 
     def buscar_producto_por_nombre(self, nombre):
-        productos_encontrados = []
-        for producto in self.productos:
-            if nombre.lower() in producto.get_nombre().lower():
-                productos_encontrados.append(producto)
-        return productos_encontrados
+        return [producto for producto in self.productos if nombre.lower() in producto.nombre.lower()]
 
     def mostrar_productos(self):
         if not self.productos:
             print("No hay productos en el inventario.")
         else:
             for producto in self.productos:
-                print("ID:", producto.get_id())
-                print("Nombre:", producto.get_nombre())
-                print("Cantidad:", producto.get_cantidad())
-                print("Precio:", producto.get_precio())
+                print("ID:", producto.id)
+                print("Nombre:", producto.nombre)
+                print("Cantidad:", producto.cantidad)
+                print("Precio:", producto.precio)
                 print("-------------------------")
 
 
@@ -130,10 +133,10 @@ if __name__ == "__main__":
             if productos_encontrados:
                 print("Productos encontrados:")
                 for producto in productos_encontrados:
-                    print("ID:", producto.get_id())
-                    print("Nombre:", producto.get_nombre())
-                    print("Cantidad:", producto.get_cantidad())
-                    print("Precio:", producto.get_precio())
+                    print("ID:", producto.id)
+                    print("Nombre:", producto.nombre)
+                    print("Cantidad:", producto.cantidad)
+                    print("Precio:", producto.precio)
                     print("-------------------------")
             else:
                 print("No se encontraron productos con ese nombre.")
